@@ -28,3 +28,6 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Trained baseline (built at deploy time by `python -m app.baseline`)
+*.joblib

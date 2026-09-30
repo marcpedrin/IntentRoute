@@ -1,0 +1,8 @@
+# Lightweight serving deps for the TF-IDF baseline (no torch).
+# Build: pip install -r requirements-deploy.txt && python -m app.baseline
+# Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+scikit-learn>=1.3
+joblib>=1.3
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.5

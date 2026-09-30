@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Literal, Protocol
 
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, field_validator
 
 # Must match the max_len used during fine-tuning (notebooks/02_distilbert.ipynb).
@@ -31,6 +32,7 @@ TOP_K = 3
 # Predictions whose top confidence falls below this go to a human agent.
 CONFIDENCE_THRESHOLD = 0.5
 DEFAULT_MODEL_DIR = Path(os.getenv("INTENTROUTE_MODEL_DIR", "model"))
+STATIC_DIR = Path(__file__).parent / "static"
 
 
 # --------------------------------------------------------------------------- #
@@ -107,6 +109,15 @@ class HFIntentClassifier:
         ]
 
 
+def load_default_classifier(model_dir: Path) -> Classifier:
+    """Prefer the fine-tuned DistilBERT; fall back to the TF-IDF baseline when its weights are absent."""
+    if model_dir.is_dir():
+        return HFIntentClassifier(model_dir)
+    from app.baseline import BaselineIntentClassifier
+
+    return BaselineIntentClassifier()
+
+
 def route_for(top_confidence: float) -> Literal["auto", "human_review"]:
     """Low-confidence predictions are escalated to a human instead of auto-handled."""
     return "human_review" if top_confidence < CONFIDENCE_THRESHOLD else "auto"
@@ -124,7 +135,7 @@ def create_app(classifier: Classifier | None = None, model_dir: Path = DEFAULT_M
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.classifier = classifier if classifier is not None else HFIntentClassifier(model_dir)
+        app.state.classifier = classifier if classifier is not None else load_default_classifier(model_dir)
         yield
         app.state.classifier = None
 
@@ -134,6 +145,10 @@ def create_app(classifier: Classifier | None = None, model_dir: Path = DEFAULT_M
         version="0.1.0",
         lifespan=lifespan,
     )
+
+    @app.get("/", include_in_schema=False)
+    def demo() -> FileResponse:
+        return FileResponse(STATIC_DIR / "index.html")
 
     @app.get("/health", response_model=HealthResponse)
     def health(request: Request) -> HealthResponse:

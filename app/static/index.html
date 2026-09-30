@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IntentRoute</title>
+<style>
+  :root { --bg:#0f1115; --card:#181b22; --fg:#e8eaf0; --muted:#8b93a7; --accent:#6ea8fe; --ok:#3fb950; --warn:#d29922; --line:#262a33; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; background:var(--bg); color:var(--fg); }
+  main { max-width:640px; margin:0 auto; padding:48px 16px; }
+  h1 { margin:0 0 4px; font-size:28px; }
+  p.sub { margin:0 0 24px; color:var(--muted); }
+  textarea { width:100%; min-height:90px; padding:12px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--fg); font:inherit; resize:vertical; }
+  button { margin-top:12px; padding:10px 18px; border:0; border-radius:8px; background:var(--accent); color:#0b1020; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:wait; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin:16px 0 0; }
+  .chip { padding:4px 10px; border:1px solid var(--line); border-radius:999px; font-size:13px; color:var(--muted); cursor:pointer; background:none; margin:0; }
+  #out { margin-top:28px; }
+  .route { display:inline-block; padding:4px 12px; border-radius:6px; font-weight:600; margin-bottom:14px; }
+  .route.auto { background:rgba(63,185,80,.15); color:var(--ok); }
+  .route.human_review { background:rgba(210,153,34,.15); color:var(--warn); }
+  .row { margin:10px 0; }
+  .row .label { display:flex; justify-content:space-between; font-size:14px; }
+  .bar { height:8px; border-radius:4px; background:var(--line); overflow:hidden; margin-top:4px; }
+  .bar span { display:block; height:100%; background:var(--accent); }
+  footer { margin-top:40px; color:var(--muted); font-size:13px; }
+  a { color:var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>IntentRoute</h1>
+  <p class="sub">Type a banking support message. It gets classified into one of 77 intents, and anything under 50% confidence is escalated to a human.</p>
+  <textarea id="text" maxlength="2000">my card still hasn't arrived</textarea>
+  <div class="chips">
+    <button class="chip">why was I charged a fee for this transfer?</button>
+    <button class="chip">someone stole my phone and my card</button>
+    <button class="chip">money</button>
+    <button class="chip">can I top up with apple pay</button>
+  </div>
+  <button id="go">Classify</button>
+  <div id="out"></div>
+  <footer>Banking77 · TF-IDF + logistic regression · <a href="/docs">API docs</a> · <a href="https://github.com/marcpedrin/IntentRoute">source</a></footer>
+</main>
+<script>
+  const text = document.getElementById('text');
+  const go = document.getElementById('go');
+  const out = document.getElementById('out');
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  async function classify() {
+    if (!text.value.trim()) return;
+    go.disabled = true;
+    try {
+      const res = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: text.value }) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const routeLabel = data.route === 'auto' ? 'Auto-routed' : 'Sent to a human';
+      out.innerHTML = `<div class="route ${data.route}">${routeLabel}</div>` + data.intents.map(i => `
+        <div class="row"><div class="label"><span>${esc(i.intent.replaceAll('_', ' '))}</span><span>${(i.confidence * 100).toFixed(1)}%</span></div>
+        <div class="bar"><span style="width:${(i.confidence * 100).toFixed(1)}%"></span></div></div>`).join('');
+    } catch (e) {
+      out.textContent = `Something went wrong (${e.message}). The free server may be waking up, so try again in a few seconds.`;
+    } finally {
+      go.disabled = false;
+    }
+  }
+  go.addEventListener('click', classify);
+  text.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) classify(); });
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { text.value = c.textContent; classify(); }));
+</script>
+</body>
+</html>
