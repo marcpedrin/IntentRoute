@@ -1,0 +1,30 @@
+# Model weights and training artifacts (produced by notebooks/02_distilbert.ipynb)
+model/
+outputs/
+checkpoints/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hugging Face cache (if pointed inside the repo)
+.cache/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

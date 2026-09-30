@@ -1,0 +1,21 @@
+# --- Data + baseline (notebooks/01_baseline.ipynb) ---
+datasets>=2.19
+scikit-learn>=1.3
+pandas>=2.0
+numpy>=1.24
+
+# --- Fine-tuning + inference (notebooks/02_distilbert.ipynb, app/) ---
+# For a CPU-only install: pip install torch --index-url https://download.pytorch.org/whl/cpu
+torch>=2.1
+transformers>=4.41
+accelerate>=0.26
+
+# --- API ---
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.5
+
+# --- Dev / notebooks ---
+pytest>=8.0
+httpx>=0.27          # required by fastapi.testclient
+jupyter>=1.0

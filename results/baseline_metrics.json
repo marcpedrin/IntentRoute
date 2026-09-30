@@ -1,0 +1,8 @@
+{
+  "model": "TF-IDF (word 1-2 grams) + LogisticRegression",
+  "split": "test",
+  "n_test": 3080,
+  "accuracy": 0.8938311688311689,
+  "macro_f1": 0.8941886071786473,
+  "best_C": 10.0
+}

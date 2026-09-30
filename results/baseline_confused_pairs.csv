@@ -1,0 +1,11 @@
+rank,intent_a,intent_b,a_predicted_as_b,b_predicted_as_a,total_confusions
+1,verify_my_identity,why_verify_identity,6,6,12
+2,balance_not_updated_after_bank_transfer,transfer_not_received_by_recipient,4,4,8
+3,card_payment_wrong_exchange_rate,wrong_exchange_rate_for_cash_withdrawal,2,5,7
+4,top_up_failed,top_up_reverted,3,4,7
+5,unable_to_verify_identity,verify_my_identity,5,2,7
+6,balance_not_updated_after_bank_transfer,pending_transfer,2,4,6
+7,card_acceptance,card_not_working,5,1,6
+8,get_physical_card,pin_blocked,2,4,6
+9,card_payment_not_recognised,extra_charge_on_statement,4,1,5
+10,exchange_via_app,fiat_currency_support,1,4,5
